@@ -1,0 +1,8 @@
+## Interface: 110002
+## Title: Beledar's spawn Timer
+## Notes: Displays spawn timers for EU and NA regions, showing times every 3 hours.
+## Author: Zehel Fenris
+## Version: 1.0.0
+
+localization.lua
+BeledarSpawnTimer.lua
