@@ -1,5 +1,6 @@
--- Load LibDataBroker
+-- Load libraries
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
+local LDBIcon = LibStub("LibDBIcon-1.0")
 
 -- Saved variable to store minimap button visibility state
 BeledarTimerDB = BeledarTimerDB or { minimap = { hide = false } }
@@ -77,6 +78,7 @@ local broker = LDB:NewDataObject(L["Spawn Timer"], {
         tooltip:AddLine(L["Next spawn in"] .. ": " .. GetTimeUntilNextSpawn(spawnTimes))
         tooltip:AddLine(L["Click to send to General chat."])
         tooltip:AddLine(L["Hold Alt and click to send to Guild chat."])
+        tooltip:AddLine(L["beledartimer"])
     end,
     OnClick = function(_, button)
         local timeUntilNextSpawn = GetTimeUntilNextSpawn(spawnTimes)
@@ -106,73 +108,23 @@ local function UpdateDisplay()
     broker.text = L["Next spawn in"] .. ": " .. timeUntilNextSpawn
 end
 
--- Create custom minimap button
-local minimapButton = CreateFrame("Button", "BeledarTimerMinimapButton", Minimap)
-minimapButton:SetFrameStrata("MEDIUM")
-minimapButton:SetWidth(32)
-minimapButton:SetHeight(32)
-minimapButton:SetFrameLevel(8)
-minimapButton:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-minimapButton:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 52 - (80 * cos(45)), (80 * sin(45)) - 52)
-
-minimapButton:SetScript("OnClick", function(self, button)
-    broker.OnClick(self, button)
-end)
-
-minimapButton:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-    broker.OnTooltipShow(GameTooltip)
-    GameTooltip:Show()
-end)
-
-minimapButton:SetScript("OnLeave", function()
-    GameTooltip:Hide()
-end)
-
--- Set the button icon
-minimapButton.icon = minimapButton:CreateTexture(nil, "BACKGROUND")
-minimapButton.icon:SetTexture("Interface\\Icons\\Inv_shadowelementalmount_purple")
-minimapButton.icon:SetWidth(20)
-minimapButton.icon:SetHeight(20)
-minimapButton.icon:SetPoint("CENTER")
-
--- Function to move the minimap button
-local function MoveMinimapButton(angle)
-    local xOffset = 52 - (80 * cos(angle))
-    local yOffset = (80 * sin(angle)) - 52
-    minimapButton:SetPoint("TOPLEFT", Minimap, "TOPLEFT", xOffset, yOffset)
-end
-
--- Update minimap button position based on saved variables
-local function UpdateMinimapButtonPosition()
-    if BeledarTimerDB.minimapButtonPosition then
-        MoveMinimapButton(BeledarTimerDB.minimapButtonPosition)
-    end
-end
-
--- Function to show/hide minimap button
-local function ToggleMinimapButton()
-    if BeledarTimerDB.minimap.hide then
-        minimapButton:Hide()
-    else
-        minimapButton:Show()
-        UpdateMinimapButtonPosition()
-    end
-end
+-- Create the minimap button
+LDBIcon:Register("BeledarTimer", broker, BeledarTimerDB.minimap)
 
 -- Chat command to toggle minimap button visibility
 SLASH_BELEDARTIMER1 = "/beledartimer"
 SlashCmdList["BELEDARTIMER"] = function(msg)
     if msg:lower() == "minimap" then
         BeledarTimerDB.minimap.hide = not BeledarTimerDB.minimap.hide
-        ToggleMinimapButton()
         if BeledarTimerDB.minimap.hide then
-            print("Minimap button hidden.")
+            LDBIcon:Hide("BeledarTimer")
+            print(L["minimapHide"])
         else
-            print("Minimap button shown.")
+            LDBIcon:Show("BeledarTimer")
+            print(L["minimapShow"])
         end
     else
-        print("Usage: /beledartimer minimap - Toggle minimap button visibility")
+        print(L["beledartimer"])
     end
 end
 
@@ -189,6 +141,3 @@ end)
 
 -- Update the display when the addon is loaded
 UpdateDisplay()
-
--- Show/hide the minimap button when the addon is loaded
-ToggleMinimapButton()
