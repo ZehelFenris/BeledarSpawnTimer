@@ -2,8 +2,21 @@
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
 local LDBIcon = LibStub("LibDBIcon-1.0")
 
--- Saved variable to store minimap button visibility state
-BeledarTimerDB = BeledarTimerDB or { minimap = { hide = false } }
+if event == "PLAYER_LOGIN"  then
+    if not MYADDON_SAVEDDVAR1 then -- first time the addon is used
+        MYADDON_SAVEDDVAR1 = {} -- allocate a table to store your saved variables (the table will be saved to disk on logout)
+        -- Now, load the table with defaults if needed.
+        MYADDON_SAVEDDVAR1.foobar = "Some Value"
+        MYADDON_SAVEDDVAR1.Frame1 = {
+            width=100,
+            height=150,
+        }
+    end
+    -- Initialise the addon with the Saved Variables information (new or loaded from disk)
+    local foobar = MYADDON_SAVEDDVAR1.foobar
+    local Frame1 = CreateFrame("Frame", "MyAddon_Frame1", UIParent)
+    Frame1:SetSize(MYADDON_SAVEDDVAR1.Frame1.width, MYADDON_SAVEDDVAR1.Frame1.height)
+end
 
 -- EU Spawn Times: Every 3 hours from 01:00 to 22:00
 local EU_times = {
@@ -109,7 +122,7 @@ local function UpdateDisplay()
 end
 
 -- Create the minimap button
-LDBIcon:Register("BeledarTimer", broker, BeledarTimerDB.minimap)
+LDBIcon:Register("BeledarSpawnTimer", broker, BeledarTimerDB)
 
 -- Chat command to toggle minimap button visibility
 SLASH_BELEDARTIMER1 = "/beledartimer"
@@ -117,11 +130,13 @@ SlashCmdList["BELEDARTIMER"] = function(msg)
     if msg:lower() == "minimap" then
         BeledarTimerDB.minimap.hide = not BeledarTimerDB.minimap.hide
         if BeledarTimerDB.minimap.hide then
-            LDBIcon:Hide("BeledarTimer")
+            LDBIcon:Hide("BeledarSpawnTimer")
             print(L["minimapHide"])
+            DevTools_Dump(BeledarTimerDB)
         else
-            LDBIcon:Show("BeledarTimer")
+            LDBIcon:Show("BeledarSpawnTimer")
             print(L["minimapShow"])
+            DevTools_Dump(BeledarTimerDB)
         end
     else
         print(L["beledartimer"])
