@@ -2,22 +2,6 @@
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
 local LDBIcon = LibStub("LibDBIcon-1.0")
 
-if event == "PLAYER_LOGIN"  then
-    if not MYADDON_SAVEDDVAR1 then -- first time the addon is used
-        MYADDON_SAVEDDVAR1 = {} -- allocate a table to store your saved variables (the table will be saved to disk on logout)
-        -- Now, load the table with defaults if needed.
-        MYADDON_SAVEDDVAR1.foobar = "Some Value"
-        MYADDON_SAVEDDVAR1.Frame1 = {
-            width=100,
-            height=150,
-        }
-    end
-    -- Initialise the addon with the Saved Variables information (new or loaded from disk)
-    local foobar = MYADDON_SAVEDDVAR1.foobar
-    local Frame1 = CreateFrame("Frame", "MyAddon_Frame1", UIParent)
-    Frame1:SetSize(MYADDON_SAVEDDVAR1.Frame1.width, MYADDON_SAVEDDVAR1.Frame1.height)
-end
-
 -- EU Spawn Times: Every 3 hours from 01:00 to 22:00
 local EU_times = {
     "01:00", "04:00", "07:00", "10:00", "13:00", "16:00", "19:00", "22:00"
@@ -91,6 +75,7 @@ local broker = LDB:NewDataObject(L["Spawn Timer"], {
         tooltip:AddLine(L["Next spawn in"] .. ": " .. GetTimeUntilNextSpawn(spawnTimes))
         tooltip:AddLine(L["Click to send to General chat."])
         tooltip:AddLine(L["Hold Alt and click to send to Guild chat."])
+        tooltip:AddLine(" ")
         tooltip:AddLine(L["beledartimer"])
     end,
     OnClick = function(_, button)
@@ -124,6 +109,27 @@ end
 -- Create the minimap button
 LDBIcon:Register("BeledarSpawnTimer", broker, BeledarTimerDB)
 
+-- Function to update the minimap button state
+local function UpdateMinimapButtonState()
+    if BeledarTimerDB and BeledarTimerDB.minimap and BeledarTimerDB.minimap.hide then
+        LDBIcon:Hide("BeledarSpawnTimer")
+    else
+        LDBIcon:Show("BeledarSpawnTimer")
+    end
+end
+
+-- Frame to listen for the PLAYER_LOGIN event
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("PLAYER_LOGIN")
+
+-- OnEvent handler to ensure the saved variables are loaded before checking the minimap button state
+frame:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_LOGIN" then
+        -- At this point, the SavedVariables should be loaded
+        UpdateMinimapButtonState()
+    end
+end)
+
 -- Chat command to toggle minimap button visibility
 SLASH_BELEDARTIMER1 = "/beledartimer"
 SlashCmdList["BELEDARTIMER"] = function(msg)
@@ -132,11 +138,9 @@ SlashCmdList["BELEDARTIMER"] = function(msg)
         if BeledarTimerDB.minimap.hide then
             LDBIcon:Hide("BeledarSpawnTimer")
             print(L["minimapHide"])
-            DevTools_Dump(BeledarTimerDB)
         else
             LDBIcon:Show("BeledarSpawnTimer")
             print(L["minimapShow"])
-            DevTools_Dump(BeledarTimerDB)
         end
     else
         print(L["beledartimer"])
