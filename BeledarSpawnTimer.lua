@@ -131,7 +131,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
 end)
 
 -- Chat command to toggle minimap button visibility
-SLASH_BELEDARTIMER1 = "/beledartimer"
+SLASH_BELEDARTIMER1 = "/bst"
 SlashCmdList["BELEDARTIMER"] = function(msg)
     if msg:lower() == "minimap" then
         BeledarTimerDB.minimap.hide = not BeledarTimerDB.minimap.hide
