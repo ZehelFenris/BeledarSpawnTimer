@@ -1,5 +1,6 @@
--- Load LibDataBroker
+-- Load libraries
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
+local LDBIcon = LibStub("LibDBIcon-1.0")
 
 -- EU Spawn Times: Every 3 hours from 01:00 to 22:00
 local EU_times = {
@@ -74,6 +75,8 @@ local broker = LDB:NewDataObject(L["Spawn Timer"], {
         tooltip:AddLine(L["Next spawn in"] .. ": " .. GetTimeUntilNextSpawn(spawnTimes))
         tooltip:AddLine(L["Click to send to General chat."])
         tooltip:AddLine(L["Hold Alt and click to send to Guild chat."])
+        tooltip:AddLine(" ")
+        tooltip:AddLine(L["beledartimer"])
     end,
     OnClick = function(_, button)
         local timeUntilNextSpawn = GetTimeUntilNextSpawn(spawnTimes)
@@ -101,6 +104,47 @@ local broker = LDB:NewDataObject(L["Spawn Timer"], {
 local function UpdateDisplay()
     local timeUntilNextSpawn = GetTimeUntilNextSpawn(spawnTimes)
     broker.text = L["Next spawn in"] .. ": " .. timeUntilNextSpawn
+end
+
+-- Create the minimap button
+LDBIcon:Register("BeledarSpawnTimer", broker, BeledarTimerDB)
+
+-- Function to update the minimap button state
+local function UpdateMinimapButtonState()
+    if BeledarTimerDB and BeledarTimerDB.minimap and BeledarTimerDB.minimap.hide then
+        LDBIcon:Hide("BeledarSpawnTimer")
+    else
+        LDBIcon:Show("BeledarSpawnTimer")
+    end
+end
+
+-- Frame to listen for the PLAYER_LOGIN event
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("PLAYER_LOGIN")
+
+-- OnEvent handler to ensure the saved variables are loaded before checking the minimap button state
+frame:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_LOGIN" then
+        -- At this point, the SavedVariables should be loaded
+        UpdateMinimapButtonState()
+    end
+end)
+
+-- Chat command to toggle minimap button visibility
+SLASH_BELEDARTIMER1 = "/beledartimer"
+SlashCmdList["BELEDARTIMER"] = function(msg)
+    if msg:lower() == "minimap" then
+        BeledarTimerDB.minimap.hide = not BeledarTimerDB.minimap.hide
+        if BeledarTimerDB.minimap.hide then
+            LDBIcon:Hide("BeledarSpawnTimer")
+            print(L["minimapHide"])
+        else
+            LDBIcon:Show("BeledarSpawnTimer")
+            print(L["minimapShow"])
+        end
+    else
+        print(L["beledartimer"])
+    end
 end
 
 -- Set up a repeating timer to update the display every minute

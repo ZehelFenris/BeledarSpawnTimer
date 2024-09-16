@@ -4,6 +4,14 @@
 ## Version: @project-version@
 ## Notes: Displays spawn timers for EU and NA regions, showing times every 3 hours.
 ## X-Curse-Project-ID: 1100425
+## Dependencies: LibDBIcon-1.0
+## OptionalDeps: LibStub, LibDataBroker-1.1
+## SavedVariables: BeledarTimerDB
 
+# Embedded libraries
+Libs\LibStub\LibStub.lua
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+
+# Your addon files
 localization.lua
 BeledarSpawnTimer.lua
